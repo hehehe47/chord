@@ -3,7 +3,10 @@ import React, { Component } from 'react';
 export default class ChordView extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      chordConfig: {},
+      nodesConfig: {}
+    };
   }
 
   render() {
