@@ -13,12 +13,12 @@ export default class ChordView extends Component {
     return (
       <div
         style={{
-          margin: '20px',
-          height: '200px',
-          width: '200px',
+          margin: '30px',
+          height: '600px',
+          width: '600px',
           display: 'inline-block',
           borderRadius: '50%',
-          border: '1px black solid',
+          border: '5px black solid',
         }}
       />
     );
