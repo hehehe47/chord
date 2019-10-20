@@ -57,7 +57,7 @@ export default class Chord extends React.Component {
   render() {
     console.log(this.state);
     return (
-      <div style={{ textAlign: 'center' }}>
+      <div>
         <ChordView />
         <ChordControl
           addHandler={this.add}
