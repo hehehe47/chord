@@ -2,13 +2,15 @@ import React from 'react';
 import ChordView from './ChordView';
 import ChordControl from './ChordControl';
 
+
+
 export default class Chord extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      nodes: [],
-      capacity: 0,
-      lookUpKey: '',
+      nodes: [], // 所有的nodes
+      capacity: 0, //
+      lookUpKey: '', // string
     };
     this.add = this.add.bind(this);
     this.leave = this.leave.bind(this);
@@ -21,22 +23,22 @@ export default class Chord extends React.Component {
   add() {
     console.log('add clicked');
     this.setState(prevState => {
-      const nodes = prevState.nodes.concat({
-        id: prevState.nodes.length,
-      });
+      // const nodes = prevState.nodes.concat({
+      //   id: prevState.nodes.length,
+      // });
       return {
-        nodes: nodes,
+        nodes: [],
       };
     });
   }
   leave() {
     console.log('leave clicked');
     this.setState(prevState => {
-      const nodes = prevState.nodes.filter(
-        (e, i) => i !== prevState.nodes.length - 1
-      );
+      // const nodes = prevState.nodes.filter(
+      //   (e, i) => i !== prevState.nodes.length - 1
+      // );
       return {
-        nodes,
+        nodes: [],
       };
     });
   }
