@@ -8,7 +8,6 @@ export default class index extends Component {
   };
 
   render() {
-    console.log(this.props.id * 360 / 128)
     let { x, y } = this.calculateXY(this.props.id * 360 / 128);
     return (
       <div
@@ -21,7 +20,8 @@ export default class index extends Component {
           left: x,
           bottom: y,
           borderRadius: '50%',
-          border: "1px solid #201b30"
+          border: "1px solid #201b30",
+          backgroundColor: `${this.props.highlight ? "#fa2d6e" : "#33f561"}`
         }}
       >{`N${this.props.id}`}</div>
     );

@@ -5,15 +5,17 @@ import ChordControl from './ChordControl';
 export default class Chord extends React.Component {
   constructor(props) {
     super(props);
+    window.xzp = this;
     this.state = {
       nodes: [],
       capacity: 0,
-      lookUpKey: '',
+      inputKey: '',
+      highlight: null,
     };
     this.add = this.add.bind(this);
     this.leave = this.leave.bind(this);
     this.lookUp = this.lookUp.bind(this);
-    this.onLookUpKeyChange = this.onLookUpKeyChange.bind(this);
+    this.onInputKeyChange = this.onInputKeyChange.bind(this);
   }
 
   componentDidMount() {}
@@ -21,50 +23,63 @@ export default class Chord extends React.Component {
   add() {
     console.log('add clicked');
     this.setState(prevState => {
-      const nodes = prevState.nodes.concat({
-        id: prevState.nodes.length,
-      });
-      return {
-        nodes: nodes,
-      };
+      if (prevState.inputKey === '') {
+        console.log('enter a node first');
+        return {...prevState};
+      } else {
+        console.log(`adding node ${prevState.inputKey}`);
+        // TODO: add algorithm
+        return {
+          ...prevState,
+          nodes: [],
+        };
+      }
     });
   }
   leave() {
     console.log('leave clicked');
     this.setState(prevState => {
-      const nodes = prevState.nodes.filter(
-        (e, i) => i !== prevState.nodes.length - 1
-      );
-      return {
-        nodes,
-      };
+      if (prevState.inputKey === '') {
+        console.log('enter a node first');
+        return {...prevState};
+      } else {
+        console.log(`adding node ${prevState.inputKey}`);
+        // TODO: leave algorithm
+        return {
+          ...prevState,
+          nodes: [],
+        };
+      }
     });
   }
   lookUp() {
-    if (this.state.lookUpKey === '') {
-      console.log('please enter a key first');
+    if (this.state.inputKey === '') {
+      console.log('please enter a lookup first');
     } else {
-      console.log(`lookUp clicked, looking up ${this.state.lookUpKey}`);
+      console.log(`lookUp clicked, looking up ${this.state.inputKey}`);
+      // TODO: look up algorithm
+      this.setState({
+        highlight: null
+      })
     }
   }
 
-  onLookUpKeyChange(event) {
+  onInputKeyChange(event) {
     this.setState({
-      lookUpKey: event.target.value,
+      inputKey: event.target.value,
     });
   }
 
   render() {
-    console.log(this.state);
     return (
       <div>
-        <ChordView />
+        <ChordView nodes={null} highlight={null} />
         <ChordControl
           addHandler={this.add}
           leaveHandler={this.leave}
           lookUpHandler={this.lookUp}
-          lookUpKey={this.state.lookUpKey}
-          onLookUpKeyChange={this.onLookUpKeyChange}
+          //inputKey={this.state.inputKey}
+          onInputKeyChange={this.onInputKeyChange}
         />
       </div>
     );

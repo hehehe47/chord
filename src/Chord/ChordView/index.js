@@ -1,18 +1,8 @@
 import React, { Component } from 'react';
 import Node from '../Node';
+import { tsThisType } from '@babel/types';
 
 export default class ChordView extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      chordConfig: {},
-      nodesConfig: {
-        highligth: null,
-        existingNodes: [32, 40, 52, 60, 70, 79, 80, 85, 102, 113],
-      },
-    };
-  }
-
   render() {
     return (
       <div
@@ -32,7 +22,6 @@ export default class ChordView extends Component {
         >
           <div
             style={{
-              boxSizing: 'border-box',
               height: '100%',
               width: '100%',
               display: 'inline-block',
@@ -41,9 +30,15 @@ export default class ChordView extends Component {
               border: '3px solid #6ebdeb',
             }}
           ></div>
-          {this.state.nodesConfig.existingNodes.map(e => (
-            <Node id={e} key={e} />
-          ))}
+          {this.props.nodes !== null
+            ? this.props.nodes.map(e =>
+                e.id == this.props.highlight ? (
+                  <Node id={e.id} key={e.id} highlight />
+                ) : (
+                  <Node id={e.id} key={e.id} />
+                )
+              )
+            : null}
         </div>
       </div>
     );

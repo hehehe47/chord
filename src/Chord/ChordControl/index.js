@@ -10,8 +10,8 @@ export default class ChordControl extends Component {
         <input
           type='text'
           placeholder='key'
-          value={this.props.lookUpKey}
-          onChange={this.props.onLookUpKeyChange}
+          value={this.props.inputKey}
+          onChange={this.props.onInputKeyChange}
         />
       </div>
     );
