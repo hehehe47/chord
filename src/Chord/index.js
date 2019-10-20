@@ -2,6 +2,8 @@ import React from 'react';
 import ChordView from './ChordView';
 import ChordControl from './ChordControl';
 
+
+
 export default class Chord extends React.Component {
   constructor(props) {
     super(props);
