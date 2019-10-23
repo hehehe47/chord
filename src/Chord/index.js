@@ -30,8 +30,18 @@ export default class Chord extends React.Component {
         return {...prevState};
       } else {
         console.log(`adding node ${prevState.inputKey}`);
-        // TODO: add algorithm
-        return {
+          const node_num = new ;
+
+
+
+          const nodes = prevState.nodes.concat({
+              id: prevState.nodes.length,
+              node: Math.random()
+          });
+
+          const capacity = prevState.capacity + 1;
+
+          return {
           ...prevState,
           nodes: [],
         };
