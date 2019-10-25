@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import Node from '../Node';
-import { tsThisType } from '@babel/types';
 
 export default class ChordView extends Component {
   render() {
@@ -31,11 +30,11 @@ export default class ChordView extends Component {
             }}
           ></div>
           {this.props.nodes !== null
-            ? this.props.nodes.map(e =>
-                e == this.props.highlight ? (
-                  <Node id={e} key={e} highlight />
+            ? this.props.nodes.map((e,i) =>
+                e === this.props.highlight ? (
+                  <Node id={e} key={i} highlight />
                 ) : (
-                  <Node id={e} key={e} />
+                  <Node id={e} key={i} />
                 )
               )
             : null}

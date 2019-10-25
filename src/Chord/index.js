@@ -172,14 +172,13 @@ export default class Chord extends React.Component {
     add() {
         this.setState(prevState => {
             if (prevState.inputKey === '') {
-                // console.log('Enter a node first');
-                alert('Enter a node first');
+                console.log('Enter a node first');
                 return {...prevState};
-            } else if (prevState.inputKey in prevState.nodes) {
+            } else if (prevState.nodes.includes(prevState.inputKey)) {
                 // TODO: duplicated input [1,1,2,3]
-                alert('Existed Node! Please enter another node!')
+                console.log('Existed Node! Please enter another node!')
             } else if (prevState.inputKey > 2 ** EXP || prevState.inputKey < 0) {
-                alert('Node invalid! Please enter a node between 0 and ' + 2 ** EXP)
+                console.log('Node invalid! Please enter a node between 0 and ' + 2 ** EXP)
             } else {
                 const capacity = prevState.capacity + 1;
                 let id = prevState.inputKey;
