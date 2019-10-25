@@ -2,28 +2,77 @@ import React from 'react';
 import ChordView from './ChordView';
 import ChordControl from './ChordControl';
 
-const EXP = 7;
-const MAX_NUM = 2 ** 7;
+const EXP = 3;
+const MAX_NUM = 2 ** EXP;
 
+//https://github.com/pedrotgn/python-p2p/blob/master/chord/chord.py
+function decr(value, size) {
+    if (size <= value) {
+        return value - size;
+    }
+    return MAX_NUM - (size - value);
+}
+
+function between(value, init, end) {
+    if (init === end) {
+        return true;
+    } else if (init > end) {
+        return !(init >= value && value > end);
+    }
+    return (init < value && value <= end);
+
+}
+
+function Ebetween(value, init, end) {
+    if (value === init) {
+        return true;
+    }
+    return between(value, init, end);
+}
+
+function betweenE(value, init, end) {
+    if (value === end) {
+        return true;
+    }
+    return between(value, init, end);
+}
 
 class node {
-    id = -1;
+    id = "";
     successor = "";
     predecessor = "";
     fingerTable = [];
 
+
     constructor(id) {
         this.id = id;
+        // initialize fingerTable
+        for (let i = 0; i < EXP; i++) {
+            const start = (parseInt(this.id) + (2 ** i)) % MAX_NUM;
+            const end = (parseInt(this.id) + 2 ** (i + 1)) % MAX_NUM;
+            this.fingerTable[i] = new finger(this, start, [start, end]);
+            // this.fingerTable[i].node = this;
+        }
     }
 
+    // successor(){
+    //     return this.fingerTable[0].node
+    // }
+
     find_successor(id) {
+        if (betweenE(id, this.predecessor.id, this.id)) {
+            return this
+        }
         let n1 = this.find_predecessor(id);
         return n1.successor;
     }
 
     find_predecessor(id) {
+        if (id === this.id) {
+            return this.predecessor;
+        }
         let n1 = this;
-        while (id > n1.id && id <= n1.successor.id) {
+        while (!betweenE(id, n1.id, n1.successor.id)) {
             // while (false) {
             n1 = n1.closest_preceding_finger(id)
         }
@@ -32,21 +81,15 @@ class node {
 
     closest_preceding_finger(id) {
         for (let i = EXP - 1; i >= 0; i--) {
-            if (this.id < this.fingerTable[i].node.id && this.fingerTable[i].node.id < id) {
+            if (between(this.fingerTable[i].node.id, this.id, id)) {
                 return this.fingerTable[i].node
             }
         }
         return this;
     }
 
+
     join(n1) {
-        // initialize fingerTable
-        for (let i = 0; i < EXP; i++) {
-            const start = parseInt(this.id) + (2 ** i) % MAX_NUM;
-            const end = parseInt(this.id) + 2 ** (i + 1) % MAX_NUM;
-            this.fingerTable[i] = new finger(this, start, [start, end]);
-            // this.fingerTable[i].node = this;
-        }
         if (n1) {
             this.init_fingerTable(n1);
             this.update_others();
@@ -62,8 +105,10 @@ class node {
         this.successor = this.fingerTable[0].node;
         this.predecessor = this.successor.predecessor;
         this.successor.predecessor = this;
+        // this.predecessor.successor = this;
+        // this.predecessor.fingerTable[0].node = this;
         for (let i = 0; i < EXP - 1; i++) {
-            if (this.id <= this.fingerTable[i + 1].start && this.fingerTable[i + 1].start < this.fingerTable[i].node.id) {
+            if (Ebetween(this.fingerTable[i + 1].start, this.id, this.fingerTable[i].node.id)) {
                 this.fingerTable[i + 1].node = this.fingerTable[i].node;
             } else {
                 this.fingerTable[i + 1].node = n1.find_successor(this.fingerTable[i + 1].start);
@@ -73,13 +118,17 @@ class node {
 
     update_others() {
         for (let i = 0; i < EXP; i++) {
-            let p = this.find_predecessor(this.id - 2 ** (i));
+            let p = this.find_predecessor(decr(this.id, 2 ** (i)));
+            if (p.successor.id === decr(this.id, 2 ** (i))) {
+                p = p.successor
+            }
             p.update_finger_table(this, i);
         }
     }
 
     update_finger_table(s, i) {
-        if (this.id <= s.id && s.id < this.fingerTable[i].node.id) {
+        // if()
+        if (Ebetween(s.id, this.id, this.fingerTable[i].node.id) && this.id !== s.id) {
             this.fingerTable[i].node = s;
             let p = this.predecessor;
             p.update_finger_table(s, i);
