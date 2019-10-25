@@ -32,10 +32,10 @@ export default class ChordView extends Component {
           ></div>
           {this.props.nodes !== null
             ? this.props.nodes.map(e =>
-                e.id == this.props.highlight ? (
-                  <Node id={e.id} key={e.id} highlight />
+                e == this.props.highlight ? (
+                  <Node id={e} key={e} highlight />
                 ) : (
-                  <Node id={e.id} key={e.id} />
+                  <Node id={e} key={e} />
                 )
               )
             : null}

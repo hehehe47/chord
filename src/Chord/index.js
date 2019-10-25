@@ -259,7 +259,7 @@ export default class Chord extends React.Component {
     render() {
         return (
             <div>
-                <ChordView nodes={null} highlight={null}/>
+                <ChordView nodes={this.state.nodes} highlight={null}/>
                 <ChordControl
                     addHandler={this.add}
                     leaveHandler={this.leave}
