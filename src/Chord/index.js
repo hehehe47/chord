@@ -2,44 +2,164 @@ import React from 'react';
 import ChordView from './ChordView';
 import ChordControl from './ChordControl';
 
+const EXP = 7;
+const MAX_NUM = 2 ** 7;
 
-const m = 7;
-const maxRange = 5;
 
 class node {
-    id = 0;
-    finger_table = [];
-    predecessor = 0;
-    successor = 0;
-    value = 0;
+    id = -1;
+    successor = "";
+    predecessor = "";
+    fingerTable = [];
+
+    constructor(id) {
+        this.id = id;
+    }
+
+    find_successor(id) {
+        let n1 = this.find_predecessor(id);
+        return n1.successor;
+    }
+
+    find_predecessor(id) {
+        let n1 = this;
+        while (id > n1.id && id <= n1.successor.id) {
+            // while (false) {
+            n1 = n1.closest_preceding_finger(id)
+        }
+        return n1;
+    }
+
+    closest_preceding_finger(id) {
+        for (let i = EXP - 1; i >= 0; i--) {
+            if (this.id < this.fingerTable[i].node.id && this.fingerTable[i].node.id < id) {
+                return this.fingerTable[i].node
+            }
+        }
+        return this;
+    }
+
+    join(n1) {
+        // initialize fingerTable
+        for (let i = 0; i < EXP; i++) {
+            const start = parseInt(this.id) + (2 ** i) % MAX_NUM;
+            const end = parseInt(this.id) + 2 ** (i + 1) % MAX_NUM;
+            this.fingerTable[i] = new finger(this, start, [start, end]);
+            // this.fingerTable[i].node = this;
+        }
+        if (n1) {
+            this.init_fingerTable(n1);
+            this.update_others();
+        } else {
+            this.predecessor = this;
+        }
+
+    }
+
+
+    init_fingerTable(n1) {
+        this.fingerTable[0].node = n1.find_successor(this.fingerTable[0].start);
+        this.successor = this.fingerTable[0].node;
+        this.predecessor = this.successor.predecessor;
+        this.successor.predecessor = this;
+        for (let i = 0; i < EXP - 1; i++) {
+            if (this.id <= this.fingerTable[i + 1].start && this.fingerTable[i + 1].start < this.fingerTable[i].node.id) {
+                this.fingerTable[i + 1].node = this.fingerTable[i].node;
+            } else {
+                this.fingerTable[i + 1].node = n1.find_successor(this.fingerTable[i + 1].start);
+            }
+        }
+    }
+
+    update_others() {
+        for (let i = 0; i < EXP; i++) {
+            let p = this.find_predecessor(this.id - 2 ** (i));
+            p.update_finger_table(this, i);
+        }
+    }
+
+    update_finger_table(s, i) {
+        if (this.id <= s.id && s.id < this.fingerTable[i].node.id) {
+            this.fingerTable[i].node = s;
+            let p = this.predecessor;
+            p.update_finger_table(s, i);
+        }
+    }
+
 }
 
-function updateFinger(nodes) {
-    var n;
-    // TODO: how to create finger tables
-    // TODO: how to update finger tables
-    // for (n of nodes){
-    //     n.finger_table
-    // }
+// function find_predecessor(n, id) {
+//     let n1 = find_successor(n, id);
+//     return n1.successor;
+// }
+//
+// function find_successor(n, id) {
+//     let n1 = n;
+//     while (id <= n1.id || id > n1.successor) {
+//         n1 = closest_preceding_finger(n1, id)
+//     }
+//     return n1;
+// }
+//
+// function closest_preceding_finger(n, id) {
+//     for (let i = EXP - 1; i >= 0; i--) {
+//         if (n.fingerTable[i].node.id > n.id && n.fingerTable[i].node.id < id) {
+//             return finger[i].node
+//         }
+//     }
+//     return n;
+// }
 
-    return nodes;
-}
+// function join(n, n1) {
+//     if (n1 !== "0") {
+//         init_fingerTable(n, n1);
+//         update_others();
+//     } else {
+//         // initialize fingerTable
+//         for (let i = 0; i < EXP; i++) {
+//             const start = parseInt(n.id) + (2 ** i) % MAX_NUM;
+//             const end = parseInt(n.id) + 2 ** (i + 1) % MAX_NUM;
+//             n.fingerTable[i] = new finger(n, start, [start, end]);
+//         }
+//         n.predecessor = n;
+//     }
+// }
 
-function addNode(prev, node) {
-    if (prev.length === 0) {
-        return updateFinger(prev.concat({node: node}));
-    } else {
-        // var i;
-        // for (i of prev) {
-        //     if (i.id >= node.id) {
-        //          //TODO : how to sort array
-        //     }
-        // }
-        return updateFinger(prev.concat({node: node}));
+// function init_fingerTable(n, n1) {
+//     n.fingerTable[0].node = find_successor(n1, n.fingerTable[0].start);
+//     n.predecessor = n.successor.predecessor;
+//     n.successor.predecessor = n;
+//     for (let i = 0; i < EXP - 1; i++) {
+//         if (n.fingerTable[i + 1].start > n.id && n.fingerTable[i + 1].start < n.fingerTable[i].node.id) {
+//             n.fingerTable[i + 1].node = n.fingerTable[i].node;
+//         } else {
+//             n.fingerTable[i + 1].node = find_successor(n1, n.fingerTable[i + 1].start);
+//         }
+//     }
+// }
+//
+// function update_others(n) {
+//     for (let i = 0; i < EXP; i++) {
+//         let p = find_predecessor(n, n.id - 2 ** (i));
+//         update_finger_table(p, n, i);
+//     }
+// }
+//
+// function update_finger_table(n, s, i) {
+//     if (s.id >= n.id && s.id < n.fingerTable[i].node.id) {
+//         n.fingerTable[i].node = s;
+//         let p = n.predecessor;
+//         update_finger_table(p, s, i);
+//     }
+// }
+
+class finger {
+    constructor(node, start, interval) {
+        this.node = node;
+        this.start = start;
+        this.interval = interval;
     }
 }
-
-var maxList = [];
 
 
 export default class Chord extends React.Component {
@@ -51,6 +171,7 @@ export default class Chord extends React.Component {
             capacity: 0,
             inputKey: '',
             highlight: null,
+            nodeList: [],
         };
         this.add = this.add.bind(this);
         this.leave = this.leave.bind(this);
@@ -63,34 +184,49 @@ export default class Chord extends React.Component {
 
 
     add() {
-        console.log('add clicked');
         this.setState(prevState => {
             if (prevState.inputKey === '') {
-                console.log('enter a node first');
+                // console.log('Enter a node first');
+                alert('Enter a node first');
                 return {...prevState};
+            } else if (prevState.inputKey in prevState.nodes) {
+                // TODO: duplicated input [1,1,2,3]
+                alert('Existed Node! Please enter another node!')
+            } else if (prevState.inputKey > 2 ** EXP || prevState.inputKey < 0) {
+                alert('Node invalid! Please enter a node between 0 and ' + 2 ** EXP)
             } else {
-                console.log(`adding node ${prevState.inputKey}`);
-                // TODO: duplicated input
-                // if (prevState.inputKey in maxList) {
-                //     alert('Please input another number');
-                //     this.add();
-                // }
-
-                let node_num = Math.floor(prevState.inputKey % 128);
-
-                let new_node = new node();
-                new_node.id = node_num;
-                new_node.value = prevState.inputKey;
-                // maxList[maxList.length] = node_num;
-                // console.log(maxList);
-                const nodes = addNode(prevState.nodes, new_node);
-                console.log(nodes);
+                // console.log(`adding node ${prevState.inputKey}`);
 
                 const capacity = prevState.capacity + 1;
+                let id = prevState.inputKey;
+                let nodes = prevState.nodes.concat(id);
+
+                let n = new node(id); // Create new node
+                console.log("new node :", n);
+
+
+                if (prevState.nodeList.length === 0) {
+                    n.join("");
+                    n.successor = n;
+                } else {
+                    for (let i of prevState.nodeList) {
+                        n.join(i);
+                    }
+                }
+                let nodeList = prevState.nodeList.concat(n); // Put node in total node list
+
+
+                console.log("Append to nodeList :", nodeList);
+
+                // console.log(n);
+                // console.log(nodes);
+                // console.log("Final nodeList :", nodeList);
 
                 return {
                     ...prevState,
                     nodes: nodes,
+                    capacity: capacity,
+                    nodeList: nodeList,
                 };
             }
         });
@@ -120,16 +256,16 @@ export default class Chord extends React.Component {
             } else {
                 console.log(`lookUp clicked, looking up ${this.state.inputKey}`);
                 // TODO: look up algorithm
-                var n;
-                var start = prevState.nodes[0].finger_table[0][0];
-                var end = prevState.nodes[0].finger_table[0][1];
+                // var n;
+                // var start = prevState.nodes[0].fingerTable[0][0];
+                // var end = prevState.nodes[0].fingerTable[0][1];
 
                 // while (){
                 //
                 // }
-                for (n of prevState.nodes) {
-
-                }
+                // for (n of prevState.nodes) {
+                //
+                // }
 
                 this.setState({
                     highlight: null
