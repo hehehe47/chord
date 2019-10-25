@@ -24,7 +24,7 @@ function between(value, init, end) {
     } else if (init > end) {
         return !(init >= value && value > end);
     }
-    return (init < value && value <= end);
+    return (init < value && value < end);
 
 }
 
@@ -52,11 +52,10 @@ class node {
     id = "";
     predecessor = "";
     fingerTable = [];
-
+    pathList = [];
 
     constructor(id) {
         this.id = id;
-        // initialize fingerTable
         for (let i = 0; i < EXP; i++) {
             const start = ((parseInt(this.id) + (2 ** i)) % MAX_NUM);
             const end = ((parseInt(this.id) + 2 ** (i + 1)) % MAX_NUM);
@@ -64,11 +63,14 @@ class node {
         }
     }
 
+
     find_successor(id) {
+        this.pathList = [];
         if (betweenE(id, this.predecessor.id, this.id)) {
             return this
         }
         let n1 = this.find_predecessor(id);
+        this.pathList = this.pathList.concat(n1.fingerTable[0].node.id);
         return n1.fingerTable[0].node;
     }
 
@@ -78,6 +80,7 @@ class node {
         }
         let n1 = this;
         while (!betweenE(id, n1.id, n1.fingerTable[0].node.id)) {
+            this.pathList = this.pathList.concat(n1.id);
             n1 = n1.closest_preceding_finger(id)
         }
         return n1;
@@ -137,7 +140,6 @@ class node {
     }
 
 }
-
 
 class finger {
     constructor(node, start, interval) {
@@ -229,20 +231,13 @@ export default class Chord extends React.Component {
                 console.log('please enter a lookup first');
             } else {
                 console.log(`lookUp clicked, looking up ${this.state.inputKey}`);
-                // TODO: look up algorithm
-                // var n;
-                // var start = prevState.nodes[0].fingerTable[0][0];
-                // var end = prevState.nodes[0].fingerTable[0][1];
+                let n = prevState.nodeList[0];
+                n.find_successor(this.state.inputKey);
+                console.log("Find ", n.pathList);
 
-                // while (){
-                //
-                // }
-                // for (n of prevState.nodes) {
-                //
-                // }
 
                 this.setState({
-                    highlight: null
+                    highlight: n.pathList
                 })
             }
         })
