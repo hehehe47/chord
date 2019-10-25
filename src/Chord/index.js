@@ -215,7 +215,7 @@ export default class Chord extends React.Component {
                 console.log('enter a node first');
                 return {...prevState};
             } else {
-                console.log(`adding node ${prevState.inputKey}`);
+                console.log(`leaving node ${prevState.inputKey}`);
                 // TODO: leave algorithm
                 return {
                     ...prevState,
@@ -236,9 +236,10 @@ export default class Chord extends React.Component {
                 console.log("Find ", n.pathList);
 
 
-                this.setState({
-                    highlight: n.pathList
-                })
+                return {
+                    ...prevState,
+                    highlight: n.pathList[n.pathList.length-1]
+                }
             }
         })
 
@@ -253,7 +254,7 @@ export default class Chord extends React.Component {
     render() {
         return (
             <div>
-                <ChordView nodes={this.state.nodes} highlight={null}/>
+                <ChordView nodes={this.state.nodes} highlight={this.state.highlight}/>
                 <ChordControl
                     addHandler={this.add}
                     leaveHandler={this.leave}
