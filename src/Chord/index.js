@@ -218,7 +218,7 @@ export default class Chord extends React.Component {
     add() {
         this.setState(prevState => {
             if (inputVaildation(prevState, 'add')) {
-                {
+                
                     const capacity = prevState.capacity + 1;
                     let id = prevState.inputKey;
                     let nodes = prevState.nodes.concat(id);
@@ -238,7 +238,7 @@ export default class Chord extends React.Component {
                         capacity: capacity,
                         nodeList: nodeList,
                     };
-                }
+                
             }
         });
     }
@@ -247,7 +247,7 @@ export default class Chord extends React.Component {
         console.log('leave clicked');
         this.setState(prevState => {
             if (inputVaildation(prevState, 'leave')) {
-                {
+                
                     console.log(`leaving node ${prevState.inputKey}`);
                     let idx = prevState.nodes.indexOf(prevState.inputKey);
                     let node_need_to_remove = prevState.nodeList[idx];
@@ -261,7 +261,7 @@ export default class Chord extends React.Component {
                         nodes: prevState.nodes,
                         nodeList: prevState.nodeList
                     };
-                }
+                
             }
         });
     }
@@ -275,7 +275,7 @@ export default class Chord extends React.Component {
                 console.log("Find ", n.pathList);
                 return {
                     ...prevState,
-                    highlight: n.pathList[n.pathList.length - 1]
+                    highlight: n.pathList
                 }
             } else {
                 return {...prevState};
@@ -299,7 +299,6 @@ export default class Chord extends React.Component {
                     addHandler={this.add}
                     leaveHandler={this.leave}
                     lookUpHandler={this.lookUp}
-                    //inputKey={this.state.inputKey}
                     onInputKeyChange={this.onInputKeyChange}
                 />
             </div>
