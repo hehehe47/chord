@@ -6,6 +6,135 @@ const EXP = 7;
 const MAX_NUM = 2 ** EXP;
 
 //https://github.com/pedrotgn/python-p2p/blob/master/chord/chord.py
+
+
+class node {
+    id = "";
+    predecessor = "";
+    fingerTable = [];
+    pathList = [];
+
+    constructor(id) {
+        this.id = id;
+        for (let i = 0; i < EXP; i++) {
+            const start = ((parseInt(this.id) + (2 ** i)) % MAX_NUM);
+            const end = ((parseInt(this.id) + 2 ** (i + 1)) % MAX_NUM);
+            this.fingerTable[i] = new finger(this, start, [start, end]);
+        }
+    }
+
+
+    find_successor(id) {
+        this.pathList = [];
+        if (betweenE(id, this.predecessor.id, this.id)) {
+            this.pathList = this.pathList.concat(this.id);
+            return this
+        }
+        let n1 = this.find_predecessor(id);
+        this.pathList = this.pathList.concat(n1.fingerTable[0].node.id);
+        return n1.fingerTable[0].node;
+    }
+
+    find_predecessor(id) {
+        if (id === this.id) {
+            return this.predecessor;
+        }
+        let n1 = this;
+        while (!betweenE(id, n1.id, n1.fingerTable[0].node.id)) {
+            this.pathList = this.pathList.concat(n1.id);
+            n1 = n1.closest_preceding_finger(id);
+        }
+        this.pathList = this.pathList.concat(n1.id);
+        return n1;
+    }
+
+    closest_preceding_finger(id) {
+        for (let i = EXP - 1; i > -1; i--) {
+            if (between(this.fingerTable[i].node.id, this.id, id)) {
+                return this.fingerTable[i].node
+            }
+        }
+        return this;
+    }
+
+
+    join(n1) {
+        if (n1) {
+            this.init_fingerTable(n1);
+            this.update_others();
+        } else {
+            this.predecessor = this;
+        }
+
+    }
+
+    remove() {
+        this.fingerTable[0].node.predecessor = this.predecessor;
+        this.update_leave_others(this.fingerTable[0].node);
+        this.predecessor.fingerTable[0].node = this.fingerTable[0].node;
+    }
+
+
+    init_fingerTable(n1) {
+        this.fingerTable[0].node = n1.find_successor(this.fingerTable[0].start);
+        this.predecessor = this.fingerTable[0].node.predecessor;
+        this.fingerTable[0].node.predecessor = this;
+        this.predecessor.fingerTable[0].node = this;
+        for (let i = 0; i < EXP - 1; i++) {
+            if (Ebetween(this.fingerTable[i + 1].start, this.id, this.fingerTable[i].node.id)) {
+                this.fingerTable[i + 1].node = this.fingerTable[i].node;
+            } else {
+                this.fingerTable[i + 1].node = n1.find_successor(this.fingerTable[i + 1].start);
+            }
+        }
+    }
+
+    update_others() {
+        for (let i = 0; i < EXP; i++) {
+            let p = this.find_predecessor(decr(this.id, 2 ** (i)));
+            if (parseInt(p.fingerTable[0].node.id) === decr(this.id, 2 ** (i))) {
+                p = p.fingerTable[0].node
+            }
+            p.update_finger_table(this, i);
+        }
+    }
+
+    update_finger_table(s, i) {
+        if (Ebetween(s.id, this.id, this.fingerTable[i].node.id) && parseInt(this.id) !== parseInt(s.id)) {//
+            this.fingerTable[i].node = s;
+            let p = this.predecessor;
+            p.update_finger_table(s, i);
+        }
+    }
+
+    update_leave_others(x) {
+        for (let i = 0; i < EXP; i++) {
+            let p = this.find_predecessor(decr(this.id, 2 ** i));
+            if (parseInt(p.fingerTable[0].node.id) === decr(this.id, 2 ** (i))) {
+                p = p.fingerTable[0].node
+            }
+            p.update_leave_finger_table(this, i, x)
+        }
+    }
+
+    update_leave_finger_table(s, i, x) {
+        if (this.fingerTable[i].node.id === s.id) {
+            this.fingerTable[i].node = x;
+            let p = this.predecessor;
+            p.update_leave_finger_table(s, i, x);
+        }
+    }
+
+}
+
+class finger {
+    constructor(node, start, interval) {
+        this.node = node;
+        this.start = start;
+        this.interval = interval;
+    }
+}
+
 function decr(value, size) {
     value = parseInt(value);
     size = parseInt(size);
@@ -48,107 +177,22 @@ function betweenE(value, init, end) {
     return between(value, init, end);
 }
 
-class node {
-    id = "";
-    predecessor = "";
-    fingerTable = [];
-    pathList = [];
-
-    constructor(id) {
-        this.id = id;
-        for (let i = 0; i < EXP; i++) {
-            const start = ((parseInt(this.id) + (2 ** i)) % MAX_NUM);
-            const end = ((parseInt(this.id) + 2 ** (i + 1)) % MAX_NUM);
-            this.fingerTable[i] = new finger(this, start, [start, end]);
-        }
+function inputVaildation(state, func) {
+    if (state.inputKey === '') {
+        alert('please enter a value first');
+        return false;
+    } else if (!state.nodes.includes(state.inputKey) && func === "leave") {
+        alert('Node not in Chord');
+        return false;
+    } else if (state.inputKey > (MAX_NUM - 1) || state.inputKey < 0) {
+        alert('Node invalid! Please enter a node between 0 and ' + MAX_NUM);
+        return false;
+    } else if (state.nodes.includes(state.inputKey) && func === "add") {
+        alert('Existed Node! Please enter another node!');
+        return false;
     }
-
-
-    find_successor(id) {
-        this.pathList = [];
-        if (betweenE(id, this.predecessor.id, this.id)) {
-            return this
-        }
-        let n1 = this.find_predecessor(id);
-        this.pathList = this.pathList.concat(n1.fingerTable[0].node.id);
-        return n1.fingerTable[0].node;
-    }
-
-    find_predecessor(id) {
-        if (id === this.id) {
-            return this.predecessor;
-        }
-        let n1 = this;
-        while (!betweenE(id, n1.id, n1.fingerTable[0].node.id)) {
-            this.pathList = this.pathList.concat(n1.id);
-            n1 = n1.closest_preceding_finger(id)
-        }
-        return n1;
-    }
-
-    closest_preceding_finger(id) {
-        for (let i = EXP - 1; i > -1; i--) {
-            if (between(this.fingerTable[i].node.id, this.id, id)) {
-                return this.fingerTable[i].node
-            }
-        }
-        return this;
-    }
-
-
-    join(n1) {
-        if (n1) {
-            this.init_fingerTable(n1);
-            this.update_others();
-        } else {
-            this.predecessor = this;
-        }
-
-    }
-
-
-    init_fingerTable(n1) {
-        this.fingerTable[0].node = n1.find_successor(this.fingerTable[0].start);
-        this.predecessor = this.fingerTable[0].node.predecessor;
-        this.fingerTable[0].node.predecessor = this;
-        this.predecessor.fingerTable[0].node = this;
-        for (let i = 0; i < EXP - 1; i++) {
-            if (Ebetween(this.fingerTable[i + 1].start, this.id, this.fingerTable[i].node.id)) {
-                this.fingerTable[i + 1].node = this.fingerTable[i].node;
-            } else {
-                this.fingerTable[i + 1].node = n1.find_successor(this.fingerTable[i + 1].start);
-            }
-        }
-    }
-
-    update_others() {
-        for (let i = 0; i < EXP; i++) {
-            let p = this.find_predecessor(decr(this.id, 2 ** (i)));
-            if (parseInt(p.fingerTable[0].node.id) === decr(this.id, 2 ** (i))) {
-                p = p.fingerTable[0].node
-            }
-            p.update_finger_table(this, i);
-        }
-    }
-
-    update_finger_table(s, i) {
-        if (Ebetween(s.id, this.id, this.fingerTable[i].node.id) && parseInt(this.id) !== parseInt(s.id)) {//
-            this.fingerTable[i].node = s;
-            let p = this.predecessor;
-            p.update_finger_table(s, i);
-        }
-    }
-
+    return true
 }
-
-class finger {
-    constructor(node, start, interval) {
-        this.node = node;
-        this.start = start;
-        this.interval = interval;
-    }
-}
-
 
 export default class Chord extends React.Component {
     constructor(props) {
@@ -173,37 +217,28 @@ export default class Chord extends React.Component {
 
     add() {
         this.setState(prevState => {
-            if (prevState.inputKey === '') {
-                console.log('Enter a node first');
-                return {...prevState};
-            } else if (prevState.nodes.includes(prevState.inputKey)) {
-                // TODO: duplicated input [1,1,2,3]
-                console.log('Existed Node! Please enter another node!')
-            } else if (prevState.inputKey > 2 ** EXP || prevState.inputKey < 0) {
-                console.log('Node invalid! Please enter a node between 0 and ' + 2 ** EXP)
-            } else {
-                const capacity = prevState.capacity + 1;
-                let id = prevState.inputKey;
-                let nodes = prevState.nodes.concat(id);
+            if (inputVaildation(prevState, 'add')) {
+                {
+                    const capacity = prevState.capacity + 1;
+                    let id = prevState.inputKey;
+                    let nodes = prevState.nodes.concat(id);
 
-                let n = new node(id); // Create new node
-                console.log("new node :", n);
+                    let n = new node(id); // Create new node
+                    console.log("new node :", n);
 
+                    let i = prevState.nodeList[0];
+                    n.join(i);
 
-                let i = prevState.nodeList[0];
-                n.join(i);
+                    let nodeList = prevState.nodeList.concat(n); // Put node in total node list
+                    console.log("Append to nodeList :", nodeList);
 
-                let nodeList = prevState.nodeList.concat(n); // Put node in total node list
-
-
-                console.log("Append to nodeList :", nodeList);
-
-                return {
-                    ...prevState,
-                    nodes: nodes,
-                    capacity: capacity,
-                    nodeList: nodeList,
-                };
+                    return {
+                        ...prevState,
+                        nodes: nodes,
+                        capacity: capacity,
+                        nodeList: nodeList,
+                    };
+                }
             }
         });
     }
@@ -211,36 +246,41 @@ export default class Chord extends React.Component {
     leave() {
         console.log('leave clicked');
         this.setState(prevState => {
-            if (prevState.inputKey === '') {
-                console.log('enter a node first');
-                return {...prevState};
-            } else {
-                console.log(`leaving node ${prevState.inputKey}`);
-                // TODO: leave algorithm
-                return {
-                    ...prevState,
-                    nodes: [],
-                };
+            if (inputVaildation(prevState, 'leave')) {
+                {
+                    console.log(`leaving node ${prevState.inputKey}`);
+                    let idx = prevState.nodes.indexOf(prevState.inputKey);
+                    let node_need_to_remove = prevState.nodeList[idx];
+                    prevState.nodes.splice(idx, 1);
+                    // console.log(prevState.nodeList)
+                    prevState.nodeList.splice(idx, 1);
+                    node_need_to_remove.remove();
+                    console.log(prevState.nodeList);
+                    return {
+                        ...prevState,
+                        nodes: prevState.nodes,
+                        nodeList: prevState.nodeList
+                    };
+                }
             }
         });
     }
 
     lookUp() {
         this.setState(prevState => {
-            if (this.state.inputKey === '') {
-                console.log('please enter a lookup first');
-            } else {
+            if (inputVaildation(prevState, 'lookup')) {
                 console.log(`lookUp clicked, looking up ${this.state.inputKey}`);
                 let n = prevState.nodeList[0];
                 n.find_successor(this.state.inputKey);
                 console.log("Find ", n.pathList);
-
-
                 return {
                     ...prevState,
-                    highlight: n.pathList[n.pathList.length-1]
+                    highlight: n.pathList[n.pathList.length - 1]
                 }
+            } else {
+                return {...prevState};
             }
+
         })
 
     }
