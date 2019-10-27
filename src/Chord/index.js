@@ -2,16 +2,25 @@ import React from 'react';
 import ChordView from './ChordView';
 import ChordControl from './ChordControl';
 
+// Constant for the chord system
+// EXP for the exponent of 2
+// max_num for the max number this chord can hold
 const EXP = 7;
 const MAX_NUM = 2 ** EXP;
 
 
 class node {
+    // Node id
     id = "";
+    // predecessor for each node
     predecessor = "";
+    // each node's finger table
     fingerTable = [];
+    // the path to find the specified lookup node
     pathList = [];
 
+    // constructor for node class
+    // initialize finger table
     constructor(id) {
         this.id = id;
         for (let i = 0; i < EXP; i++) {
@@ -21,7 +30,7 @@ class node {
         }
     }
 
-
+    // find node's successor for each key
     find_successor(id) {
         this.pathList = [];
         if (betweenE(id, this.predecessor.id, this.id)) {
@@ -33,6 +42,7 @@ class node {
         return n1.fingerTable[0].node;
     }
 
+    // find node's predecessor for each key
     find_predecessor(id) {
         if (id === this.id) {
             return this.predecessor;
@@ -46,6 +56,7 @@ class node {
         return n1;
     }
 
+    // find id in which finger table
     closest_preceding_finger(id) {
         for (let i = EXP - 1; i > -1; i--) {
             if (between(this.fingerTable[i].node.id, this.id, id)) {
@@ -55,7 +66,7 @@ class node {
         return this;
     }
 
-
+    // function to join a new node to chord
     join(n1) {
         if (n1) {
             this.init_fingerTable(n1);
@@ -66,13 +77,14 @@ class node {
 
     }
 
+    // function to remove a new node to chord
     remove() {
         this.fingerTable[0].node.predecessor = this.predecessor;
         this.update_leave_others(this.fingerTable[0].node);
         this.predecessor.fingerTable[0].node = this.fingerTable[0].node;
     }
 
-
+    // finalize the new node's finger table
     init_fingerTable(n1) {
         this.fingerTable[0].node = n1.find_successor(this.fingerTable[0].start);
         this.predecessor = this.fingerTable[0].node.predecessor;
@@ -87,6 +99,7 @@ class node {
         }
     }
 
+    // update other node's finger table according to new node
     update_others() {
         for (let i = 0; i < EXP; i++) {
             let p = this.find_predecessor(decr(this.id, 2 ** (i)));
@@ -97,6 +110,7 @@ class node {
         }
     }
 
+    // using recursion
     update_finger_table(s, i) {
         if (Ebetween(s.id, this.id, this.fingerTable[i].node.id) && parseInt(this.id) !== parseInt(s.id)) {//
             this.fingerTable[i].node = s;
@@ -105,6 +119,7 @@ class node {
         }
     }
 
+    // update other node's finger table according to leaving node
     update_leave_others(x) {
         for (let i = 0; i < EXP; i++) {
             let p = this.find_predecessor(decr(this.id, 2 ** i));
@@ -115,6 +130,7 @@ class node {
         }
     }
 
+    // using recursion
     update_leave_finger_table(s, i, x) {
         if (this.fingerTable[i].node.id === s.id) {
             this.fingerTable[i].node = x;
@@ -125,6 +141,7 @@ class node {
 
 }
 
+// class for each finger in finger table
 class finger {
     constructor(node, start, interval) {
         this.node = node;
@@ -133,6 +150,7 @@ class finger {
     }
 }
 
+// calculate difference between two values
 function decr(value, size) {
     value = parseInt(value);
     size = parseInt(size);
@@ -142,6 +160,7 @@ function decr(value, size) {
     return MAX_NUM - (size - value);
 }
 
+// judge whether a value is between init and end on a circle
 function between(value, init, end) {
     value = parseInt(value);
     init = parseInt(init);
@@ -155,6 +174,7 @@ function between(value, init, end) {
 
 }
 
+// judge whether a value is between init and end or equals to init on a circle
 function Ebetween(value, init, end) {
     value = parseInt(value);
     init = parseInt(init);
@@ -165,6 +185,7 @@ function Ebetween(value, init, end) {
     return between(value, init, end);
 }
 
+// judge whether a value is between init and end or equals to end on a circle
 function betweenE(value, init, end) {
     value = parseInt(value);
     init = parseInt(init);
@@ -175,6 +196,7 @@ function betweenE(value, init, end) {
     return between(value, init, end);
 }
 
+//function to judge whether input is valid
 function inputVaildation(state, func) {
     if (state.inputKey === '') {
         alert('please enter a value first');
@@ -192,6 +214,7 @@ function inputVaildation(state, func) {
     return true
 }
 
+// main class for UI
 export default class Chord extends React.Component {
     constructor(props) {
         super(props);
@@ -212,7 +235,7 @@ export default class Chord extends React.Component {
     componentDidMount() {
     }
 
-
+    // add button function
     add() {
         this.setState(prevState => {
             if (inputVaildation(prevState, 'add')) {
@@ -241,6 +264,7 @@ export default class Chord extends React.Component {
         });
     }
 
+    // leave button function
     leave() {
         console.log('leave clicked');
         this.setState(prevState => {
@@ -270,6 +294,7 @@ export default class Chord extends React.Component {
         });
     }
 
+    // lookup button function
     lookUp() {
         this.setState(prevState => {
             if (inputVaildation(prevState, 'lookup')) {
