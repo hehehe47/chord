@@ -6,7 +6,7 @@ export default class ChordView extends Component {
     return (
       <div
         style={{
-          padding: '20px',
+          padding: '50px',
           display: 'flex',
           justifyContent: 'center',
         }}
@@ -30,13 +30,24 @@ export default class ChordView extends Component {
             }}
           ></div>
           {this.props.nodes !== null
-            ? this.props.nodes.map((e,i) =>
-                e === this.props.highlight ? (
-                  <Node id={e} key={i} highlight />
-                ) : (
-                  <Node id={e} key={i} />
-                )
-              )
+            ? this.props.nodes.map((e, i) => {
+                if (this.props.highlight !== null) {
+                  if (this.props.highlight.includes(e)) {
+                    if (
+                      this.props.highlight[this.props.highlight.length - 1] ===
+                      e
+                    ) {
+                      return <Node id={e} key={i} result />;
+                    } else {
+                      return <Node id={e} key={i} highlight />;
+                    }
+                  } else {
+                    return <Node id={e} key={i} />;
+                  }
+                } else {
+                  return <Node id={e} key={i} />;
+                }
+              })
             : null}
         </div>
       </div>
