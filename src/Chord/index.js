@@ -5,8 +5,6 @@ import ChordControl from './ChordControl';
 const EXP = 7;
 const MAX_NUM = 2 ** EXP;
 
-//https://github.com/pedrotgn/python-p2p/blob/master/chord/chord.py
-
 
 class node {
     id = "";
@@ -218,27 +216,27 @@ export default class Chord extends React.Component {
     add() {
         this.setState(prevState => {
             if (inputVaildation(prevState, 'add')) {
-                
-                    const capacity = prevState.capacity + 1;
-                    let id = prevState.inputKey;
-                    let nodes = prevState.nodes.concat(id);
 
-                    let n = new node(id); // Create new node
-                    console.log("new node :", n);
+                const capacity = prevState.capacity + 1;
+                let id = prevState.inputKey;
+                let nodes = prevState.nodes.concat(id);
 
-                    let i = prevState.nodeList[0];
-                    n.join(i);
+                let n = new node(id); // Create new node
+                console.log("new node :", n);
 
-                    let nodeList = prevState.nodeList.concat(n); // Put node in total node list
-                    console.log("Append to nodeList :", nodeList);
+                let i = prevState.nodeList[0];
+                n.join(i);
 
-                    return {
-                        ...prevState,
-                        nodes: nodes,
-                        capacity: capacity,
-                        nodeList: nodeList,
-                    };
-                
+                let nodeList = prevState.nodeList.concat(n); // Put node in total node list
+                console.log("Append to nodeList :", nodeList);
+
+                return {
+                    ...prevState,
+                    nodes: nodes,
+                    capacity: capacity,
+                    nodeList: nodeList,
+                };
+
             }
         });
     }
@@ -247,21 +245,27 @@ export default class Chord extends React.Component {
         console.log('leave clicked');
         this.setState(prevState => {
             if (inputVaildation(prevState, 'leave')) {
-                
-                    console.log(`leaving node ${prevState.inputKey}`);
-                    let idx = prevState.nodes.indexOf(prevState.inputKey);
-                    let node_need_to_remove = prevState.nodeList[idx];
-                    prevState.nodes.splice(idx, 1);
-                    // console.log(prevState.nodeList)
-                    prevState.nodeList.splice(idx, 1);
-                    node_need_to_remove.remove();
-                    console.log(prevState.nodeList);
+                if (prevState.nodeList.length === 1) {
                     return {
                         ...prevState,
-                        nodes: prevState.nodes,
-                        nodeList: prevState.nodeList
+                        nodes: [],
+                        nodeList: []
                     };
-                
+                }
+                console.log(`leaving node ${prevState.inputKey}`);
+                let idx = prevState.nodes.indexOf(prevState.inputKey);
+                let node_need_to_remove = prevState.nodeList[idx];
+                prevState.nodes.splice(idx, 1);
+                // console.log(prevState.nodeList)
+                prevState.nodeList.splice(idx, 1);
+                node_need_to_remove.remove();
+                console.log(prevState.nodeList);
+                return {
+                    ...prevState,
+                    nodes: prevState.nodes,
+                    nodeList: prevState.nodeList
+                };
+
             }
         });
     }
